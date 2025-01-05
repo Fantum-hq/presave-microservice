@@ -1,10 +1,10 @@
 const { validationResult } = require("express-validator");
 const { fireStore } = require("../../../config/firestore");
-const { scheduleTask } = require("../../../services/taskQueue");
+const { scheduleTask } = require("../../../services/scheduleTask");
 const moment = require("moment");
-  
- 
-const handlePresave = async (req, res) => { 
+
+
+const handlePresave = async (req, res) => {
     const { presaveID, accessToken, libraryId = "my-library" } = req.body;
 
     try {
@@ -40,11 +40,11 @@ const handlePresave = async (req, res) => {
 
         return res.status(200).json({ message: "Song scheduling successful." });
     } catch (error) {
-        console.error("Error handling presave:", error.message);
-        return res.status(500).json({ error: "Internal server error" });
+        console.error("Error handling presave:", error);
+        return res.status(500).json({ error: "Internal server error", error });
     }
 };
 
 
 
-module.exports = {   handlePresave };
+module.exports = { handlePresave };

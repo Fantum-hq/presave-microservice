@@ -17,7 +17,7 @@ const addToLibrary = async (accessToken, songUrl, libraryId) => {
         const trackId = match[1]; // Extract trackId from songUrl
 
         // Determine the endpoint based on the libraryId
-        if (libraryId === 'my-library') {
+        if (libraryId === 'my-library' || !libraryId) {
             // Add to the user's library
             addTrackResponse = await axios.put(
                 `https://api.spotify.com/v1/me/tracks?ids=${trackId}`,
