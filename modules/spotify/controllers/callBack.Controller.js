@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { fireStore } = require("../config/firestore");
+const { fireStore } = require("../../../config/firestore");
 
 const {
     SPOTIFY_CLIENT_ID,
@@ -7,7 +7,7 @@ const {
     SPOTIFY_TOKEN_URL,
     SPOTIFY_USER_PROFILE_URL,
     SPOTIFY_REDIRECT_URI,
-    SPOTIFY_REFRESH_TOKEN_URL, 
+    SPOTIFY_REFRESH_TOKEN_URL,
 } = process.env;
 
 const callbackController = async (req, res) => {
@@ -79,12 +79,12 @@ const callbackController = async (req, res) => {
             });
             console.log('User data saved.');
         }
-  
+
 
         // Step 4: Redirect the user back to the frontend with the access token
         res.redirect(`http://localhost:3000/fan-page/${presaveID}?access_token=${access_token}`);
 
-      
+
     } catch (error) {
         console.error(error.message);
         res.status(500).send('Authentication failed!');

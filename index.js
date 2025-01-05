@@ -1,64 +1,36 @@
 require('dotenv').config();
 const express = require('express');
-const axios = require('axios');
 const cookieParser = require('cookie-parser');
-const { addUser, getUsers } = require('./user-management');
-const cors = require('cors');  // Import the cors package
-const { loginController } = require('./controllers/login.Controller');
-const { callbackController } = require('./controllers/callBack.Controller');
-const { addSongController } = require('./controllers/addSong.Controller');
-const { trackDetailsController } = require('./controllers/trackDetails.Controller');
-const { getLibraryController } = require('./controllers/getLibrary.Controller');
-const { preSaveController, getPresaveController, handlePresave } = require('./controllers/presave.Controller');
+const cors = require('cors');
+const spotifyRoutes = require('./modules/spotify/routes/spotify.Route');
+const preSaveRoutes = require('./modules/presave/routes/presave.Route');
+
+// const { router, setQueues } = require('@bull-board/express'); // Correct import for Bull v4.x
+// const { taskQueue } = require('./services/taskQueue');  // Import your taskQueue
+// const { BullAdapter } = require('@bull-board/express'); // Correct import for Bull v4.x 
+
+// Set up Bull Board to monitor the taskQueue
+// setQueues([new BullAdapter(taskQueue)]);
 
 const app = express();
 const port = process.env.PORT || 8000;
 
 app.use(cookieParser());
 app.use(express.json());
-// Use CORS middleware to enable CORS for all routes
 app.use(cors({
     origin: '*',  // Adjust this to your frontend's URL (e.g., React app running on port 3001)
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-
-app.get('/login', loginController);
-
-// Step 2: Callback to exchange the code for an access token
-app.get('/callback', callbackController);
-
-// Endpoint to add song to the chosen library (playlist or My Library)
-app.post('/add-song', addSongController);
+app.post('/presave', preSaveRoutes); //presaves from artist
+app.use('/spotify', spotifyRoutes); //This is where all spotify information is
 
 
-// Endpoint to get track details
-app.get('/track-details', trackDetailsController);
+// Add Bull Board route to the app
+// app.use('/admin/queues', router);
 
-
-// Fetch all users
-app.get('/users', (req, res) => {
-    const users = getUsers();
-    res.json(users);
-});
-
-
-// Endpoint to get user libraries (playlists)
-app.get('/get-libraries', getLibraryController);
-
-
-// Endpoint to pre-save a song
-app.post('/presave', preSaveController);
-
-// Endpoint to pre-save a song
-app.get('/get-presave', getPresaveController);
-
-// Endpoint to handle pre-save
-app.post("/presave/:presaveID", handlePresave);
-
-
-// Start server
+// Start the server
 app.listen(port, () => {
     console.log(`App is running at http://localhost:${port}`);
 });
