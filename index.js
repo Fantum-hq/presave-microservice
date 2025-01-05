@@ -23,7 +23,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.post('/presave', preSaveRoutes); //presaves from artist
+app.use('/presave', preSaveRoutes); //presaves from artist
 app.use('/spotify', spotifyRoutes); //This is where all spotify information is
 
 

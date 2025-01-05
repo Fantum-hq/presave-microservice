@@ -14,7 +14,7 @@ const storePresaveDetails = async (req, res) => {
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const { artist, songLink, title, releaseDate, timeZone, providers } = req.body;
+        const { creatorId, artist, songLink, title, releaseDate, timeZone, providers } = req.body;
 
         // Query the "presaves" collection to check for its existence
         const presavesSnapshot = await fireStore.collection("presaves").limit(1).get();
@@ -26,7 +26,7 @@ const storePresaveDetails = async (req, res) => {
 
         // Create a new presave document
         const newPresaveData = {
-            creatorId: generateRandomId(), //replace withUser UUID
+            creatorId: creatorId || generateRandomId(), //replace withUser UUID
             title,
             artist,
             releaseDate,
@@ -38,7 +38,7 @@ const storePresaveDetails = async (req, res) => {
 
         const newPresaveRef = await fireStore.collection("presaves").add(newPresaveData);
 
-        res.status(201).json({
+        res.status(200).json({
             message: "Presave created successfully",
             id: newPresaveRef.id,
             ...newPresaveData,
@@ -49,6 +49,38 @@ const storePresaveDetails = async (req, res) => {
     }
 };
 
+// Controller to handle fetching presaves by id or creatorId
+const getPresaveDetails = async (req, res) => {
+    try {
+        const { id } = req.query;
+
+        if (!id) {
+            return res.status(400).json({ error: "Either 'id' is required to fetch a presave." });
+        }
+
+        let querySnapshot;
+        if (id) {
+            // Fetch presave by ID
+            querySnapshot = await fireStore.collection("presaves").doc(id).get();
+
+        }
+
+        if (!querySnapshot.exists && querySnapshot.empty) {
+            return res.status(404).json({ error: "Presave not found." });
+        }
+
+        const presaveData = querySnapshot.data ? querySnapshot.data() : querySnapshot.docs[0].data();
+
+        res.status(200).json({
+            message: "Presave retrieved successfully",
+            presave: { ...presaveData, id: querySnapshot.id },
+
+        });
+    } catch (error) {
+        console.error("Error:", error.message);
+        res.status(500).json({ error: error.message });
+    }
+};
 
 
-module.exports = { storePresaveDetails };
+module.exports = { storePresaveDetails, getPresaveDetails };

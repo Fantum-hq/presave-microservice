@@ -8,6 +8,7 @@ const {
     SPOTIFY_USER_PROFILE_URL,
     SPOTIFY_REDIRECT_URI,
     SPOTIFY_REFRESH_TOKEN_URL,
+    USER_FRONTEND_URL
 } = process.env;
 
 const callbackController = async (req, res) => {
@@ -82,7 +83,7 @@ const callbackController = async (req, res) => {
 
 
         // Step 4: Redirect the user back to the frontend with the access token
-        res.redirect(`http://localhost:3000/fan-page/${presaveID}?access_token=${access_token}`);
+        res.redirect(`${USER_FRONTEND_URL}/${presaveID}?access_token=${access_token}`);
 
 
     } catch (error) {

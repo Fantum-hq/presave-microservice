@@ -6,6 +6,7 @@ const {
 
 const loginController = (req, res) => {
     const scope = "user-library-modify user-read-private user-read-email playlist-modify-public playlist-modify-private";
+   
 
     // Set the 'state' with the presaveID parameter (which could be passed in query params)
     const state = req.query.presaveID ? encodeURIComponent(req.query.presaveID) : '';
