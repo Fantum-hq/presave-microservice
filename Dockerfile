@@ -1,23 +1,23 @@
-# Use the official Node.js image from Docker Hub
-FROM node:18
+# Step 1: Use the official Node.js image
+FROM node:18-alpine
 
-# Set the working directory inside the container
-WORKDIR /usr/src/app
+# Step 2: Set the working directory inside the container
+WORKDIR /app
 
-# Copy package.json and package-lock.json (if available)
-COPY package*.json ./
+# Step 3: Install pm2 globally
+RUN npm install -g pm2
 
-# Install dependencies (including PM2)
-RUN npm install
+# Step 4: Copy package.json and yarn.lock (or package-lock.json if you're using npm)
+COPY package.json yarn.lock ./
 
-# Install PM2 globally (if not added to package.json dependencies)
-RUN npm install pm2 -g
+# Step 5: Install dependencies
+RUN yarn install --production
 
-# Copy the rest of the application code
+# Step 6: Copy the rest of the application code into the container
 COPY . .
 
-# Expose the port your app will run on (adjust based on your app's configuration)
-EXPOSE 3000
+# Step 7: Expose the application port
+EXPOSE 8000
 
-# Start the app using PM2 (it will use ecosystem.config.js to run the app)
-CMD ["pm2-runtime", "ecosystem.config.js"]
+# Step 8: Set the command to run pm2 and start the application
+CMD ["pm2-runtime", "index.js"]
