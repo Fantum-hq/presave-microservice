@@ -3,7 +3,7 @@ version: '3.8'
 services:
         app:
                 build: .
-                container_name: node-app
+                container_name: fantumcr.azurecr.io/presave-microservice:v2
                 ports:
                         - '8000:8000'
                 depends_on:
