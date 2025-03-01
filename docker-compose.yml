@@ -1,27 +1,40 @@
-version: '3.8'
-
 services:
         app:
                 build: .
-                container_name: fantumcr.azurecr.io/presave-microservice:v2
                 ports:
-                        - '8000:8000'
+                        - 8000:8000
                 depends_on:
                         - redis
+                env_file:
+                        - .env.production
                 environment:
-                        - REDIS_HOST=redis
-                        - REDIS_PORT=6379
+                        - REDIS1_URL=redis://redis:6379
+                        - REDIS2_URL=redis://redis:6380
+                        - REDIS3_URL=redis://redis:6382
                 networks:
-                        - app-network
+                        - default
 
         redis:
-                image: redis:alpine
-                container_name: redis-server
+                image: redis
+                restart: always
                 ports:
-                        - '6379:6379'
-                networks:
-                        - app-network
+                        - 6379:6379
+                        - 6380:6380
+                        - 6382:6382
+                healthcheck:
+                        test: ['CMD', 'redis-cli', 'ping']
+                        interval: 5s
+                        timeout: 5s
+                        retries: 5
+                volumes:
+                        - redis_data:/data1
+                        - redis_data:/data2
+                        - redis_data:/data3
+                entrypoint: redis-server --appendonly yes
+
+volumes:
+        redis_data:
 
 networks:
-        app-network:
-                driver: bridge
+        default:
+                name: redis_network

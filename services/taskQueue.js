@@ -1,21 +1,19 @@
-const Bull = require('bull');
+const Queue = require('bull');
 const moment = require('moment-timezone');
 const { addToLibrary } = require('../modules/spotify/services/spotify.Service');
 const {
 	convertToRelease,
 } = require('../modules/presave/services/presave.Service');
+const { QUEUES } = require('../config/queues');
 
+// const { createClient } = require('redis');
+// const pubClient = createClient({ url: 'redis://redis:6379' });
 // Create a new queue (ensure it's using Bull v4.x)
-const taskQueue = new Bull('taskQueue', {
-	redis: {
-		host: 'localhost',
-		port: 6379,
-	},
-});
+const taskQueue = new Queue('taskQueue', QUEUES.taskQueue);
 
 // Error handling for the queue
 taskQueue.on('error', error => {
-	console.error('Bull queue error:', error);
+	// console.error('Bull queue error:', error);
 });
 
 taskQueue.on('failed', (job, error) => {
@@ -24,21 +22,21 @@ taskQueue.on('failed', (job, error) => {
 
 // Process the jobs from the queue
 taskQueue.process(async job => {
-	const { userId, songLink, accessToken, libraryId } = job.data;
+	const { userId, scanSource, accessToken, libraryId } = job.data;
 
 	try {
 		const success = await addToLibrary(
 			accessToken,
-			songLink,
+			scanSource,
 			libraryId
 		);
 		if (success) {
 			console.log(
-				`Successfully added song ${songLink} to user ${userId}'s library`
+				`Successfully added song ${scanSource} to user ${userId}'s library`
 			);
 		} else {
 			console.error(
-				`Failed to add song ${songLink} to user ${userId}'s library.`
+				`Failed to add song ${scanSource} to user ${userId}'s library.`
 			);
 		}
 	} catch (error) {

@@ -1,6 +1,9 @@
 const moment = require('moment-timezone');
 const { taskQueue } = require('./taskQueue');
-const { presaveConverterQueue } = require('./presaveConverterQueue');
+const { converterQueue } = require('./converterQueue');
+const { getDelay } = require('../utils/getDelay');
+
+const taskTypes = ['presaveConversion', 'fanLibraryUpdate'];
 
 // Function to schedule a task for a user
 const scheduleTask = async ({ type, data }) => {
@@ -10,6 +13,7 @@ const scheduleTask = async ({ type, data }) => {
 			creatorId,
 			scanSource,
 			releaseType,
+			CreatorsTimeZone,
 			timeZone,
 			showReleaseDate,
 			releaseDate,
@@ -17,20 +21,21 @@ const scheduleTask = async ({ type, data }) => {
 			title,
 			artist,
 			type,
-			linksReleaseTime,
 			image,
 		} = data;
 
 		// Convert the release date to the user's time zone and get the cron time format
 
-		const releaseTime = moment(linksReleaseTime);
-
-		// Calculate the delay (in milliseconds) until the user release time
-		const delay = releaseTime.diff(moment());
-		console.log({ linksReleaseTime, releaseTime, delay });
+		const delay = getDelay({
+			releaseDate,
+			CreatorsTimeZone,
+			timeZone,
+			releaseType,
+		});
+		console.log({ releaseDate, CreatorsTimeZone, delay });
 
 		// Add the job to the queue with a delay
-		presaveConverterQueue.add(
+		converterQueue.add(
 			{
 				id,
 				creatorId,
@@ -49,33 +54,38 @@ const scheduleTask = async ({ type, data }) => {
 		);
 
 		console.log(
-			`Presave From Fantum User Task scheduled for link ${releaseTime.format()} (${timeZone}).`
+			`Presave From Fantum User Task scheduled for link ${releaseDate} (${timeZone}).`
 		);
 		return;
 	}
 	if (type == 'library') {
 		const {
-			userReleaseTime,
+			releaseDate,
 			userId,
-			songLink,
+			scanSource,
 			accessToken,
-			timeZone,
+			CreatorsTimeZone,
+			FanTimeZone = undefined,
+			releaseType,
 			libraryId,
 		} = data;
 		// Convert the release date to the user's time zone and get the cron time format
-		const userTime = moment.tz(userReleaseTime, timeZone);
 
-		// Calculate the delay (in milliseconds) until the user release time
-		const delay = userTime.diff(moment());
+		const delay = getDelay({
+			releaseDate,
+			releaseType,
+			CreatorsTimeZone,
+			FanTimeZone,
+		});
 
 		// Add the job to the queue with a delay
 		await taskQueue.add(
-			{ userId, songLink, accessToken, libraryId },
+			{ userId, scanSource, accessToken, libraryId },
 			{ delay } // Delay the job execution to the user's release time
 		);
 
 		console.log(
-			`Task scheduled for user ${userId} at ${userTime.format()} (${timeZone}).`
+			`Task scheduled for user ${userId} at ${FanTimeZone} (${CreatorsTimeZone}).`
 		);
 	}
 };

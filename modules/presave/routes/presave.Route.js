@@ -3,9 +3,7 @@ const {
 	storePresaveDetails,
 	getPresaveDetails,
 } = require('../controllers/presave.Controller');
-const {
-	presaveConverterQueue,
-} = require('../../../services/presaveConverterQueue');
+const { converterQueue } = require('../../../services/converterQueue');
 
 const express = require('express');
 const router = express.Router();
@@ -13,7 +11,7 @@ const router = express.Router();
 router.post('/store-details', storePresaveDetails);
 router.get('/get-details', getPresaveDetails);
 router.get('/test', async (req, res) => {
-	presaveConverterQueue.add(
+	converterQueue.add(
 		{ type: 'test', data: { test: 'good' } },
 		{ delay: 40000 }
 	);

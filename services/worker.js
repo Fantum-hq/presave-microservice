@@ -18,21 +18,21 @@ const startWorker = () => {
 			console.log({ convertSucces });
 			return;
 		}
-		const { userId, songLink, accessToken, libraryId } = job.data;
+		const { userId, scanSource, accessToken, libraryId } = job.data;
 
 		try {
 			const success = await addToLibrary(
 				accessToken,
-				songLink,
+				scanSource,
 				libraryId
 			);
 			if (success) {
 				console.log(
-					`Successfully added song ${songLink} to user ${userId}'s library`
+					`Successfully added song ${scanSource} to user ${userId}'s library`
 				);
 			} else {
 				console.error(
-					`Failed to add song ${songLink} to user ${userId}'s library.`
+					`Failed to add song ${scanSource} to user ${userId}'s library.`
 				);
 			}
 		} catch (error) {

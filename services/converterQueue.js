@@ -1,28 +1,21 @@
-const Bull = require('bull');
-const moment = require('moment-timezone');
+const Queue = require('bull');
 const {
 	convertToRelease,
 } = require('../modules/presave/services/presave.Service');
+const { QUEUES } = require('../config/queues');
 
-// Create a new queue (ensure it's using Bull v4.x)
-const presaveConverterQueue = new Bull('presaveConverterQueue', {
-	redis: {
-		host: 'localhost',
-		port: 6379,
-	},
+const converterQueue = new Queue('converterQueue', QUEUES.converterQueue);
+
+converterQueue.on('error', error => {
+	// console.error(process.env.REDIS_HOST, 'Bull queue error:', error);
 });
 
-// Error handling for the queue
-presaveConverterQueue.on('error', error => {
-	console.error('Bull queue error:', error);
-});
-
-presaveConverterQueue.on('failed', (job, error) => {
+converterQueue.on('failed', (job, error) => {
 	console.error(`Job ${job.id} failed:`, error);
 });
 
 // Process the jobs from the queue
-presaveConverterQueue.process(async job => {
+converterQueue.process(async job => {
 	console.log(job.data);
 
 	try {
@@ -67,4 +60,4 @@ presaveConverterQueue.process(async job => {
 	}
 });
 
-module.exports = { presaveConverterQueue };
+module.exports = { converterQueue };

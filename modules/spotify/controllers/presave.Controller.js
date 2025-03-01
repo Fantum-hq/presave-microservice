@@ -1,10 +1,15 @@
 const { validationResult } = require('express-validator');
-const { fireStore } = require('../../../config/firestore');
+const { fireStore, firebase } = require('../../../config/firestore');
 const { scheduleTask } = require('../../../services/scheduleTask');
 const moment = require('moment');
 
 const handlePresave = async (req, res) => {
-	const { presaveID, accessToken, libraryId = 'my-library' } = req.body;
+	const {
+		timeZone: ftz = undefined,
+		presaveID,
+		accessToken,
+		libraryId = 'my-library',
+	} = req.body;
 
 	try {
 		// Fetch presave data from Firestore
@@ -20,7 +25,6 @@ const handlePresave = async (req, res) => {
 		}
 
 		const presaveData = presaveDoc.data();
-		const { songLink, releaseDate, timeZone } = presaveData;
 
 		// Query users collection to find the user by accessToken if not passed
 		const usersRef = fireStore.collection('fans');
@@ -38,24 +42,32 @@ const handlePresave = async (req, res) => {
 		const userDoc = querySnapshot.docs[0];
 		const userId = userDoc.id;
 
-		// Convert release date to the user's time zone
-		const releaseTime = new Date(releaseDate);
-		const userReleaseTime = moment
-			.tz(releaseTime, timeZone)
-			.toDate();
-		console.log('User release time:', timeZone, userReleaseTime);
+		const { releaseDate, scanSource, timeZone, releaseType } =
+			presaveData;
+
 		// Schedule the task
 		scheduleTask({
 			type: 'library',
 			data: {
-				userReleaseTime,
 				userId,
-				songLink,
-				accessToken,
-				timeZone,
 				libraryId,
+				scanSource,
+				releaseDate,
+				accessToken,
+				releaseType,
+				FanTimeZone: ftz,
+				CreatorsTimeZone: timeZone,
 			},
 		});
+
+		await fireStore
+			.collection('fans')
+			.doc(userId)
+			.update({
+				presaves: firebase.firestore.FieldValue.arrayUnion(
+					presaveID
+				),
+			});
 
 		return res
 			.status(200)

@@ -1,6 +1,5 @@
 const axios = require('axios');
 const { fireStore } = require('../../../config/firestore');
-const { body } = require('express-validator');
 
 function formattedData(data) {
 	const providers = Object.keys(data.linksByPlatform).map(key => ({
@@ -30,7 +29,6 @@ const getOdesiData = async link => {
 const convertToRelease = async data => {
 	try {
 		console.log('createRelease Function::', { data });
-
 		const {
 			id,
 			creatorId,
@@ -79,8 +77,9 @@ const convertToRelease = async data => {
 		const newPresaveRef = await fireStore
 			.collection('smart-links')
 			.doc(newReleaseData.id)
-			.set(newReleaseData);
+			.update(newReleaseData);
 		console.log('Success', odesiResponse);
+
 		return {
 			success: true,
 			message: 'Song added to your library successfully!',

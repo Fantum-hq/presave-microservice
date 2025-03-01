@@ -12,4 +12,5 @@ const fireStore = firebase.firestore();
 fireStore.settings({
 	ignoreUndefinedProperties: true, // This will ignore undefined properties when writing to Firestore
 });
-module.exports = { fireStore };
+
+module.exports = { fireStore, firebase };
