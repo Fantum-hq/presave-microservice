@@ -4,36 +4,50 @@ const { scheduleTask } = require('../../../services/scheduleTask');
 const moment = require('moment-timezone');
 const uuid = require('uuid');
 
-const presaveFields = ['creatorId', 'scanSource', 'releaseType', 'timeZone', 'showReleaseDate', 'releaseDate', 'providers', 'title', 'artist', 'type', 'image']
+const presaveFields = [
+	'creatorId',
+	'scanSource',
+	'releaseType',
+	'timeZone',
+	'showReleaseDate',
+	'releaseDate',
+	'providers',
+	'title',
+	'artist',
+	'type',
+	'image',
+];
 const storePresaveDetails = async (req, res) => {
 	try {
-		
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ errors: errors.array() });
 		}
 
 		const presaveData = req.body;
-		if( !presaveFields
-			.every(key => Object.keys(presaveData).includes(key))  ){
-			const failedFields = presaveFields.filter(field => !presaveData[field]);
+		if (
+			!presaveFields.every(key =>
+				Object.keys(presaveData).includes(key)
+			)
+		) {
+			const failedFields = presaveFields.filter(
+				field => !presaveData[field]
+			);
 			return res.status(400).json({
 				error: 'Missing required fields',
-				missingFields: failedFields
+				missingFields: failedFields,
 			});
 		}
 		const presavesSnapshot = await fireStore
-		.collection('smart-links')
-		.limit(1)
-		.get();
-
+			.collection('smart-links')
+			.limit(1)
+			.get();
 
 		if (presavesSnapshot.empty) {
 			console.log(
 				"No 'smart-links' collection found. Creating a new one..."
 			);
 		}
-
 
 		const newPresaveData = {
 			id: uuid.v4(),
