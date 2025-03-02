@@ -13,7 +13,7 @@ const taskQueue = new Queue('taskQueue', QUEUES.taskQueue);
 
 // Error handling for the queue
 taskQueue.on('error', error => {
-	// console.error('Bull queue error:', error);
+	console.error('task', 'Bull queue error:', error);
 });
 
 taskQueue.on('failed', (job, error) => {

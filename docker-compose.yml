@@ -9,8 +9,6 @@ services:
                         - .env.production
                 environment:
                         - REDIS1_URL=redis://redis:6379
-                        - REDIS2_URL=redis://redis:6380
-                        - REDIS3_URL=redis://redis:6382
                 networks:
                         - default
 
@@ -19,19 +17,14 @@ services:
                 restart: always
                 ports:
                         - 6379:6379
-                        - 6380:6380
-                        - 6382:6382
                 healthcheck:
                         test: ['CMD', 'redis-cli', 'ping']
                         interval: 5s
                         timeout: 5s
                         retries: 5
                 volumes:
-                        - redis_data:/data1
-                        - redis_data:/data2
-                        - redis_data:/data3
-                entrypoint: redis-server --appendonly yes
-
+                        - redis_data:/data
+                entrypoint: ['redis-server', '--appendonly', 'yes']
 volumes:
         redis_data:
 

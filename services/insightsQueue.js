@@ -6,11 +6,13 @@ const {
 const { QUEUES } = require('../config/queues');
 
 // Create a new Redis connection
-const redis = new Redis();
 
 // Create a new Bull queue
 const insightsQueue = new Queue('insights', QUEUES.insightsQueue);
 
+insightsQueue.on('error', error => {
+	console.error('Bull queue error:', error);
+});
 // Add a job to the queue to run every 10 minutes
 async function initInsights() {
 	const isReady = await insightsQueue.isReady();
@@ -24,7 +26,12 @@ async function initInsights() {
 
 // Process the jobs in the queue
 insightsQueue.process(async job => {
-	await getFantumInsights();
+	console.log(job);
+	try {
+		await getFantumInsights();
+	} catch (e) {
+		console.log(e);
+	}
 });
 
 // Countdown logic

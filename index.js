@@ -60,14 +60,14 @@ app.use('/insights', insightsRoutes); //This is where all insights information i
 // console.log(`Seconds: ${seconds.toFixed(2)}`); // Rounded to 2 decimal places
 // console.log(`Minutes: ${minutes.toFixed(2)}`);
 
-if (converterQueue.isReady) {
-	converterQueue.empty();
-	console.log('converter queue is ready');
-}
-if (taskQueue.isReady) {
-	taskQueue.empty();
-	console.log('task queue is ready');
-}
+// if (converterQueue.isReady) {
+// 	converterQueue.empty();
+// 	console.log('converter queue is ready');
+// }
+// if (taskQueue.isReady) {
+// 	taskQueue.empty();
+// 	console.log('task queue is ready');
+// }
 
 // Start the server
 app.listen(port, () => {

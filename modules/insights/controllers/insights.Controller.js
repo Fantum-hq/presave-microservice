@@ -4,6 +4,29 @@ const csv = require('csv-parser');
 const updateInsights = require('../../../utils/firebase/updateInsights');
 const { BatchProcessData } = require('../../../utils/insights');
 
+const getLinkInsights = async (req, res) => {
+	// liveVisitors
+	// uniqueVisitors
+	// totalPageviews
+	// totalPageviews
+	// bounceRate
+	// averageSession
+
+	try {
+		// if (false) {
+		// 	return res.status(400).json({ error: ''});
+		// }
+		const insights = await getFantumInsights();
+		res.status(200).json({
+			message: 'Insights retrieved successfully',
+			insights: insights ?? 'none',
+			insightsLength: Object.keys(insights)?.length ?? 0,
+		});
+	} catch (error) {
+		console.error('Error:', error.message);
+		res.status(500).json({ error: error.message });
+	}
+};
 const getAllInsights = async (req, res) => {
 	try {
 		// if (false) {
@@ -74,4 +97,4 @@ const rebaseInsights = async (req, res) => {
 	}
 };
 
-module.exports = { getAllInsights, rebaseInsights };
+module.exports = { getAllInsights, rebaseInsights, getLinkInsights };

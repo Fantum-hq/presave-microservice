@@ -7,7 +7,7 @@ const { QUEUES } = require('../config/queues');
 const converterQueue = new Queue('converterQueue', QUEUES.converterQueue);
 
 converterQueue.on('error', error => {
-	// console.error(process.env.REDIS_HOST, 'Bull queue error:', error);
+	console.error('Bull queue error:', error);
 });
 
 converterQueue.on('failed', (job, error) => {

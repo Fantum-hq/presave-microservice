@@ -1,13 +1,13 @@
 const host = process.env.REDIS_HOST;
 const QUEUES = {
 	taskQueue: {
-		redis: { port: 6379, host },
+		redis: 'redis://redis:6379',
 	},
 	converterQueue: {
-		redis: { port: 6380, host },
+		redis: 'redis://redis:6379',
 	},
 	insightsQueue: {
-		redis: { port: 6382, host },
+		redis: 'redis://redis:6379',
 	},
 };
 

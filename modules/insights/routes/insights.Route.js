@@ -3,13 +3,17 @@ const {
 	getAllInsights,
 	rebaseInsights,
 } = require('../controllers/insights.Controller');
-const { initInsights } = require('../../../services/insightsQueue');
+const {
+	initInsights,
+	getLinkInsights,
+} = require('../../../services/insightsQueue');
 
 initInsights();
 const router = express.Router();
 
 // Example route
 router.get('/', getAllInsights);
+// router.get('/link-insights', getLinkInsights);
 router.patch('/rebase', rebaseInsights);
 
 // Add more routes as needed

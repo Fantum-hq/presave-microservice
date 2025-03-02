@@ -23,7 +23,6 @@ async function updateInsights(insights) {
 			batch.set(insightRef, insight, { merge: true });
 		}
 	}
-	console.log('batch', batch);
 
 	try {
 		await batch.commit();
