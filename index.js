@@ -1,7 +1,5 @@
 const dotenv = require('dotenv');
-const envFile = process.env.NODE_ENV
-	? `./.env.${process.env.NODE_ENV}`
-	: './.env';
+const envFile = process.env.NODE_ENV ? `./.env.${process.env.NODE_ENV}` : './.env.development';
 
 dotenv.config({ path: envFile });
 console.log(`Loaded environment: ${envFile}`);
@@ -13,8 +11,7 @@ const cors = require('cors');
 const spotifyRoutes = require('./modules/spotify/routes/spotify.Route');
 const preSaveRoutes = require('./modules/presave/routes/presave.Route');
 const insightsRoutes = require('./modules/insights/routes/insights.Route');
-const { converterQueue } = require('./services/converterQueue');
-const { taskQueue } = require('./services/taskQueue');
+const podcastsRoutes = require('./modules/podcasts/routes/podcasts.Route');
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -23,13 +20,14 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(
 	cors({
-		origin: 'http://localhost:3000', // Adjust this to your frontend's URL (e.g., React app running on port 3001)
+		origin: '*', // Adjust this to your frontend's URL (e.g., React app running on port 3001)
 		methods: ['GET', 'POST', 'PUT', 'DELETE'],
 		allowedHeaders: ['Content-Type', 'Authorization'],
 	})
 );
 
 app.use('/presave', preSaveRoutes); //presaves from artist
+app.use('/podcast', podcastsRoutes); //presaves from artist
 app.use('/spotify', spotifyRoutes); //This is where all spotify information is
 app.use('/insights', insightsRoutes); //This is where all insights information is
 

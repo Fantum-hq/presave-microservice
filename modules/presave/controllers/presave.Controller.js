@@ -4,19 +4,7 @@ const { scheduleTask } = require('../../../services/scheduleTask');
 const moment = require('moment-timezone');
 const uuid = require('uuid');
 
-const presaveFields = [
-	'creatorId',
-	'scanSource',
-	'releaseType',
-	'timeZone',
-	'showReleaseDate',
-	'releaseDate',
-	'providers',
-	'title',
-	'artist',
-	'type',
-	'image',
-];
+const presaveFields = ['creatorId', 'scanSource', 'releaseType', 'releaseDate', 'title', 'artist', 'type', 'image'];
 const storePresaveDetails = async (req, res) => {
 	try {
 		const errors = validationResult(req);
@@ -25,28 +13,17 @@ const storePresaveDetails = async (req, res) => {
 		}
 
 		const presaveData = req.body;
-		if (
-			!presaveFields.every(key =>
-				Object.keys(presaveData).includes(key)
-			)
-		) {
-			const failedFields = presaveFields.filter(
-				field => !presaveData[field]
-			);
+		if (!presaveFields.every(key => Object.keys(presaveData).includes(key))) {
+			const failedFields = presaveFields.filter(field => !presaveData[field]);
 			return res.status(400).json({
 				error: 'Missing required fields',
 				missingFields: failedFields,
 			});
 		}
-		const presavesSnapshot = await fireStore
-			.collection('smart-links')
-			.limit(1)
-			.get();
+		const presavesSnapshot = await fireStore.collection('smart-links').limit(1).get();
 
 		if (presavesSnapshot.empty) {
-			console.log(
-				"No 'smart-links' collection found. Creating a new one..."
-			);
+			console.log("No 'smart-links' collection found. Creating a new one...");
 		}
 
 		const newPresaveData = {
@@ -57,13 +34,13 @@ const storePresaveDetails = async (req, res) => {
 
 		scheduleTask({
 			type: 'presave',
-			data: { ...newPresaveData, CreatorsTimeZone: timeZone },
+			data: {
+				...newPresaveData,
+				CreatorsTimeZone: presaveData.timeZone || 'utc',
+			},
 		});
 
-		const newPresaveRef = await fireStore
-			.collection('smart-links')
-			.doc(newPresaveData.id)
-			.create(newPresaveData);
+		const newPresaveRef = await fireStore.collection('smart-links').doc(newPresaveData.id).create(newPresaveData);
 
 		res.status(200).json({
 			message: 'Presave created successfully',
@@ -88,21 +65,14 @@ const getPresaveDetails = async (req, res) => {
 		let querySnapshot;
 		if (id) {
 			// Fetch presave by ID
-			querySnapshot = await fireStore
-				.collection('presaves')
-				.doc(id)
-				.get();
+			querySnapshot = await fireStore.collection('presaves').doc(id).get();
 		}
 
 		if (!querySnapshot.exists && querySnapshot.empty) {
-			return res
-				.status(404)
-				.json({ error: 'Presave not found.' });
+			return res.status(404).json({ error: 'Presave not found.' });
 		}
 
-		const presaveData = querySnapshot.data
-			? querySnapshot.data()
-			: querySnapshot.docs[0].data();
+		const presaveData = querySnapshot.data ? querySnapshot.data() : querySnapshot.docs[0].data();
 
 		res.status(200).json({
 			message: 'Presave retrieved successfully',

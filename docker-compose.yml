@@ -1,33 +1,34 @@
 services:
-        app:
-                build: .
-                ports:
-                        - 8000:8000
-                depends_on:
-                        - redis
-                env_file:
-                        - .env.production
-                environment:
-                        - REDIS1_URL=redis://redis:6379
-                networks:
-                        - default
+    app:
+        build: .
+        ports:
+            - 8000:8000
+        depends_on:
+            - redis
+        env_file:
+            - .env.production
+        environment:
+            - REDIS1_URL=redis://redis:6379
+            - NODE_ENV=production
+        networks:
+            - default
 
-        redis:
-                image: redis
-                restart: always
-                ports:
-                        - 6379:6379
-                healthcheck:
-                        test: ['CMD', 'redis-cli', 'ping']
-                        interval: 5s
-                        timeout: 5s
-                        retries: 5
-                volumes:
-                        - redis_data:/data
-                entrypoint: ['redis-server', '--appendonly', 'yes']
+    redis:
+        image: redis
+        restart: always
+        ports:
+            - 6379:6379
+        healthcheck:
+            test: ['CMD', 'redis-cli', 'ping']
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        volumes:
+            - redis_data:/data
+        entrypoint: ['redis-server', '--appendonly', 'yes']
 volumes:
-        redis_data:
+    redis_data:
 
 networks:
-        default:
-                name: redis_network
+    default:
+        name: redis_network

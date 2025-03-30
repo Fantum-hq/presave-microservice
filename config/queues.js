@@ -1,13 +1,20 @@
 const host = process.env.REDIS_HOST;
+
+// if (!host) {
+// 	throw new Error('No redis host', { cause: 'env' });
+// }
+
+console.log(host);
+
 const QUEUES = {
 	taskQueue: {
-		redis: 'redis://redis:6379',
+		redis: host,
 	},
 	converterQueue: {
-		redis: 'redis://redis:6379',
+		redis: host,
 	},
 	insightsQueue: {
-		redis: 'redis://redis:6379',
+		redis: host,
 	},
 };
 

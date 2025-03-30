@@ -1,26 +1,44 @@
 const { fireStore } = require('../../config/firestore');
 
+function formatDate(dateString) {
+	const date = new Date(dateString);
+	return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' }).replace(',', '');
+}
+
 async function updateInsights(insights) {
-	if (Object.keys(insights).length == 0) {
-		console.log('no Insight data to update');
+	if (Object.keys(insights).length === 0) {
+		console.log('No insight data to update');
 		return null;
 	}
 
+	console.log('Updating insights for song IDs:', Object.keys(insights));
+
 	const batch = fireStore.batch();
+
 	for (const id of Object.keys(insights)) {
-		console.log(id);
 		const insight = insights[id];
 		const insightRef = fireStore.collection('insights').doc(id);
 
-		// Pull existing data
-		const doc = await insightRef.get();
-		if (doc.exists) {
-			const existingData = doc.data();
-			// Merge existing data with new data, adding numbers for properties that exist in both
-			const updatedData = mergeData(existingData, insight);
-			batch.set(insightRef, updatedData, { merge: true });
-		} else {
-			batch.set(insightRef, insight, { merge: true });
+		try {
+			// Fetch only if necessary
+			let updatedData = insight;
+			const doc = await insightRef.get();
+
+			if (doc.exists) {
+				updatedData = mergeData(doc.data(), insight);
+			}
+
+			batch.set(
+				insightRef,
+				{
+					...updatedData,
+					lastRefresh: formatDate(new Date()),
+					// uniqueVisitors: Object.keys(updatedData.visitors).length,
+				},
+				{ merge: true }
+			);
+		} catch (error) {
+			console.error(`Error fetching insight for ID ${id}:`, error);
 		}
 	}
 
@@ -29,43 +47,56 @@ async function updateInsights(insights) {
 		console.log('Insights updated successfully');
 		return { success: true };
 	} catch (error) {
-		console.log('Error updating insights: ', error);
+		console.error('Error updating insights:', error);
 		return { success: false, error };
 	}
 }
 
-function mergeData(existingData, newData) {
-	const mergedData = { ...existingData };
+function mergeData(obj1, obj2) {
+	if (!obj1) return obj2;
+	if (!obj2) return obj1;
+
+	function deepMerge(target, source) {
+		for (const key of Object.keys(source)) {
+			if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+				if (!target[key]) target[key] = {};
+				deepMerge(target[key], source[key]);
+			} else if (typeof source[key] === 'number') {
+				target[key] = (target[key] || 0) + source[key];
+			} else {
+				target[key] = source[key];
+			}
+		}
+	}
+
+	const merged = { ...obj1 };
+	deepMerge(merged, obj2);
+	return merged;
+}
+// Merges new insight data with existing Firestore data.
+function mergeData2(existingData, newData) {
+	const mergedData = structuredClone(existingData) || {}; // Deep clone for safety
+
 	for (const key in newData) {
-		if (
-			typeof newData[key] === 'object' &&
-			!Array.isArray(newData[key])
-		) {
-			mergedData[key] = mergeData(
-				existingData[key] || {},
-				newData[key]
-			);
-		} else if (
-			typeof newData[key] === 'number' &&
-			typeof existingData[key] === 'number'
-		) {
+		if (typeof newData[key] === 'object' && newData[key] !== null && !Array.isArray(newData[key])) {
+			mergedData[key] = mergeData(existingData[key] ?? {}, newData[key]);
+		} else if (typeof newData[key] === 'number' && typeof existingData[key] === 'number') {
 			mergedData[key] = existingData[key] + newData[key];
 		} else {
-			mergedData[key] = newData[key];
+			mergedData[key] = newData[key]; // Keep non-numeric values
 		}
 	}
 	return mergedData;
 }
-
-async function createCollectionIfNotExists(collectionName) {
-	const collectionRef = fireStore.collection(collectionName);
-	const snapshot = await collectionRef.limit(1).get();
-	if (snapshot.empty) {
-		await collectionRef.add({ initialized: true });
-		console.log(`Collection ${collectionName} created.`);
-	} else {
-		console.log(`Collection ${collectionName} already exists.`);
-	}
-}
+// async function createCollectionIfNotExists(collectionName) {
+// 	const collectionRef = fireStore.collection(collectionName);
+// 	const snapshot = await collectionRef.limit(1).get();
+// 	if (snapshot.empty) {
+// 		await collectionRef.add({ initialized: true });
+// 		console.log(`Collection ${collectionName} created.`);
+// 	} else {
+// 		console.log(`Collection ${collectionName} already exists.`);
+// 	}
+// }
 
 module.exports = updateInsights;

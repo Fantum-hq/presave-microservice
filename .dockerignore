@@ -4,3 +4,4 @@ Dockerfile
 .dockerignore
 .git
 ecosystem.config.js
+*.csv

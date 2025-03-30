@@ -1,7 +1,7 @@
 module.exports = {
 	apps: [
 		{
-			name: 'my-backend-app',
+			name: 'ftu-backend',
 			script: 'index.js', // Replace with your main file
 			instances: 'max', // Number of instances to run (max for clustering)
 			exec_mode: 'cluster', // Use cluster mode for better performance

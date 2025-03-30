@@ -1,7 +1,5 @@
 const Queue = require('bull');
-const {
-	convertToRelease,
-} = require('../modules/presave/services/presave.Service');
+const { convertToRelease } = require('../modules/presave/services/presave.Service');
 const { QUEUES } = require('../config/queues');
 
 const converterQueue = new Queue('converterQueue', QUEUES.converterQueue);
@@ -19,22 +17,7 @@ converterQueue.process(async job => {
 	console.log(job.data);
 
 	try {
-		const {
-			id,
-			creatorId,
-			scanSource,
-			releaseType,
-			timeZone,
-			showReleaseDate,
-			releaseDate,
-			providers,
-			title,
-			artist,
-			type,
-			image,
-		} = job.data;
-
-		console.log('trying,  job.data.presave: ', job.data);
+		const { id, creatorId, scanSource, releaseType, timeZone, showReleaseDate, releaseDate, providers, title, artist, type, image } = job.data;
 
 		const success = await convertToRelease({
 			id,

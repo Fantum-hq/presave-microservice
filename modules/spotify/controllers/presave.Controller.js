@@ -4,33 +4,24 @@ const { scheduleTask } = require('../../../services/scheduleTask');
 const moment = require('moment');
 
 const handlePresave = async (req, res) => {
-	const {
-		timeZone: ftz = undefined,
-		presaveID,
-		accessToken,
-		libraryId = 'my-library',
-	} = req.body;
+	console.log(req.body);
+
+	const { timeZone: ftz = undefined, presaveID, accessToken, libraryId = 'my-library' } = req.body;
 
 	try {
 		// Fetch presave data from Firestore
-		const presaveRef = fireStore
-			.collection('smart-links')
-			.doc(presaveID);
+		const presaveRef = fireStore.collection('smart-links').doc(presaveID);
 		const presaveDoc = await presaveRef.get();
 
 		if (!presaveDoc.exists) {
-			return res
-				.status(404)
-				.json({ error: 'Presave not found' });
+			return res.status(404).json({ error: 'Presave not found' });
 		}
 
 		const presaveData = presaveDoc.data();
 
 		// Query users collection to find the user by accessToken if not passed
 		const usersRef = fireStore.collection('fans');
-		const querySnapshot = await usersRef
-			.where('spotify.accessToken', '==', accessToken)
-			.get();
+		const querySnapshot = await usersRef.where('spotify.accessToken', '==', accessToken).get();
 
 		if (querySnapshot.empty) {
 			return res.status(404).json({
@@ -42,8 +33,9 @@ const handlePresave = async (req, res) => {
 		const userDoc = querySnapshot.docs[0];
 		const userId = userDoc.id;
 
-		const { releaseDate, scanSource, timeZone, releaseType } =
-			presaveData;
+		const { releaseDate, scanSource, timeZone, releaseType } = presaveData;
+
+		console.log({ scanSource, releaseDate, releaseType, timeZone });
 
 		// Schedule the task
 		scheduleTask({
@@ -64,19 +56,13 @@ const handlePresave = async (req, res) => {
 			.collection('fans')
 			.doc(userId)
 			.update({
-				presaves: firebase.firestore.FieldValue.arrayUnion(
-					presaveID
-				),
+				presaves: firebase.firestore.FieldValue.arrayUnion(presaveID),
 			});
 
-		return res
-			.status(200)
-			.json({ message: 'Song scheduling successful.' });
+		return res.status(200).json({ message: 'Song scheduling successful.' });
 	} catch (error) {
 		console.error('Error handling presave:', error);
-		return res
-			.status(500)
-			.json({ error: 'Internal server error', error });
+		return res.status(500).json({ error: 'Internal server error', error });
 	}
 };
 
