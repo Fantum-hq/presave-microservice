@@ -24,6 +24,8 @@ dist-ssr
 *.sw?
 *.csv
 
+utils/batch-single/cache/log.json
+
 utils/service-account-key.json
 .env*
  
